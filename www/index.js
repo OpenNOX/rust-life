@@ -1,3 +1,3 @@
 import * as wasm from "rust-life";
 
-wasm.greet();
+wasm.greet("Christopher");
