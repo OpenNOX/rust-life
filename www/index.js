@@ -6,9 +6,9 @@ const GRID_COLOR = "#CCCCCC";
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
 
-const universe = Universe.new();
-const width = universe.width();
-const height = universe.height();
+const width = 64;
+const height = 64;
+const universe = Universe.new(width, height);
 
 const canvas = document.getElementById("game-of-life-canvas");
 canvas.height = (CELL_SIZE_PX + 1) * height + 1;
@@ -46,7 +46,7 @@ const cellIsAlive = (cellIndex, cells) => {
 }
 
 const drawCells = () => {
-    const cellsPtr = universe.cells();
+    const cellsPtr = universe.get_cells_as_ptr();
     const cells = new Uint8Array(memory.buffer, cellsPtr, width * height / 8);
 
     canvasContext.beginPath();
@@ -75,6 +75,8 @@ const renderLoop = () => {
 
     requestAnimationFrame(renderLoop);
 };
+
+universe.initialize_cells();
 
 drawGrid();
 drawCells();

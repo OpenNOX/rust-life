@@ -13,14 +13,6 @@ use wasm_bindgen::prelude::*;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
-#[repr(u8)]
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Cell {
-    Dead = 0,
-    Alive = 1,
-}
-
-#[wasm_bindgen]
 pub struct Universe {
     width: u32,
     height: u32,
@@ -29,40 +21,29 @@ pub struct Universe {
 
 #[wasm_bindgen]
 impl Universe {
-    pub fn width(&self) -> u32 {
-        self.width
-    }
-
-    pub fn height(&self) -> u32 {
-        self.height
-    }
-
-    pub fn cells(&self) -> *const u32 {
-        self.cells.as_slice().as_ptr()
-    }
-
-    pub fn new() -> Universe {
-        let width = 64;
-        let height = 64;
-
+    pub fn new(width: u32, height: u32) -> Universe {
         let cell_count = (width * height) as usize;
-        let mut cells = FixedBitSet::with_capacity(cell_count);
-
-        for i in 0..cell_count {
-            cells.set(i, js_sys::Math::random() < 0.5);
-        }
+        let cells = FixedBitSet::with_capacity(cell_count);
 
         Universe { width, height, cells }
+    }
+
+    pub fn initialize_cells(&mut self) {
+        let cell_count = (self.width * self.height) as usize;
+
+        for i in 0..cell_count {
+            self.cells.set(i, js_sys::Math::random() < 0.5);
+        }
     }
 
     pub fn tick(&mut self) {
         let mut next_cells = self.cells.clone();
 
         for row in 0..self.height {
-            for col in 0..self.width {
-                let index = self.get_index(row, col);
+            for column in 0..self.width {
+                let index = self.get_index(row, column);
                 let cell = self.cells[index];
-                let live_neighbor_count = self.get_live_neighbor_count(row, col);
+                let live_neighbor_count = self.get_live_neighbor_count(row, column);
 
                 next_cells.set(index, match (cell, live_neighbor_count) {
                     // Rule 1: Any live cell with fewer than two live neighbors dies, as if caused
@@ -90,26 +71,50 @@ impl Universe {
         self.cells = next_cells;
     }
 
+    pub fn get_width(&self) -> u32 {
+        self.width
+    }
+
+    pub fn get_height(&self) -> u32 {
+        self.height
+    }
+
+    pub fn get_cells_as_ptr(&self) -> *const u32 {
+        self.cells.as_slice().as_ptr()
+    }
+
     fn get_index(&self, row: u32, column: u32) -> usize {
         (row * self.width + column) as usize
     }
 
     fn get_live_neighbor_count(&self, row: u32, column: u32) -> u8 {
         let mut count = 0;
-        for delta_row in [self.height - 1, 0, 1].iter().cloned() {
-            for delta_col in [self.width - 1, 0, 1].iter().cloned() {
-                if delta_row == 0 && delta_col == 0 {
+        for row_offset in [self.height - 1, 0, 1].iter().cloned() {
+            for column_offset in [self.width - 1, 0, 1].iter().cloned() {
+                if row_offset == 0 && column_offset == 0 {
                     continue;
                 }
 
-                let neighbor_row = (row + delta_row) % self.height;
-                let neighbor_col = (column + delta_col) % self.width;
-                let index = self.get_index(neighbor_row, neighbor_col);
+                let neighbor_row = (row + row_offset) % self.height;
+                let neighbor_column = (column + column_offset) % self.width;
+                let index = self.get_index(neighbor_row, neighbor_column);
 
                 count += self.cells[index] as u8;
             }
         }
 
         count
+    }
+}
+
+impl Universe {
+    pub fn get_cells(&self) -> &FixedBitSet {
+        &self.cells
+    }
+
+    pub fn set_cells(&mut self, cells: &[(u32, u32)], enabled: bool) {
+        for (row, column) in cells.iter().cloned() {
+            self.cells.set(self.get_index(row, column), enabled);
+        }
     }
 }
