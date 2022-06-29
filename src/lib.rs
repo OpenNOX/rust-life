@@ -36,6 +36,11 @@ impl Universe {
         }
     }
 
+    pub fn toggle_cell(&mut self, row: u32, column: u32) {
+        let index = self.get_index(row, column);
+        self.cells.set(index, !self.cells[index]);
+    }
+
     pub fn tick(&mut self) {
         let mut next_cells = self.cells.clone();
 
@@ -69,14 +74,6 @@ impl Universe {
         }
 
         self.cells = next_cells;
-    }
-
-    pub fn get_width(&self) -> u32 {
-        self.width
-    }
-
-    pub fn get_height(&self) -> u32 {
-        self.height
     }
 
     pub fn get_cells_as_ptr(&self) -> *const u32 {

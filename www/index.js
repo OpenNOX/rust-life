@@ -1,5 +1,5 @@
 import { memory } from "rust-life/rust_life_bg";
-import { Universe, Cell } from "rust-life";
+import { Universe } from "rust-life";
 
 const CELL_SIZE_PX = 10;
 const GRID_COLOR = "#CCCCCC";
@@ -14,6 +14,24 @@ const canvas = document.getElementById("game-of-life-canvas");
 canvas.height = (CELL_SIZE_PX + 1) * height + 1;
 canvas.width = (CELL_SIZE_PX + 1) * width + 1;
 const canvasContext = canvas.getContext("2d");
+
+canvas.addEventListener("click", event => {
+    const boundingRect = canvas.getBoundingClientRect();
+
+    const scaleX = canvas.width / boundingRect.width;
+    const scaleY = canvas.height / boundingRect.height;
+
+    const canvasTop = (event.clientY - boundingRect.top) * scaleY;
+    const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
+
+    const row = Math.min(Math.floor(canvasTop / (CELL_SIZE_PX + 1)), height - 1);
+    const column = Math.min(Math.floor(canvasLeft / (CELL_SIZE_PX + 1)), width - 1);
+
+    universe.toggle_cell(row, column);
+
+    drawGrid();
+    drawCells();
+});
 
 const drawGrid = () => {
     canvasContext.beginPath();
@@ -67,13 +85,14 @@ const drawCells = () => {
     canvasContext.stroke();
 };
 
+let animationId = null;
 const renderLoop = () => {
     universe.tick();
 
     drawGrid();
     drawCells();
 
-    requestAnimationFrame(renderLoop);
+    animationId = requestAnimationFrame(renderLoop);
 };
 
 universe.initialize_cells();
@@ -81,4 +100,25 @@ universe.initialize_cells();
 drawGrid();
 drawCells();
 
-requestAnimationFrame(renderLoop);
+const playPauseButton = document.getElementById("play-pause");
+
+const playSimulation = () => {
+  playPauseButton.textContent = "⏸︎";
+  renderLoop();
+};
+
+const pauseSimulation = () => {
+  playPauseButton.textContent = "▶";
+  cancelAnimationFrame(animationId);
+  animationId = null;
+};
+
+playPauseButton.addEventListener("click", _ => {
+    if (animationId === null) {
+        playSimulation();
+    } else {
+        pauseSimulation();
+    }
+});
+
+pauseSimulation();
