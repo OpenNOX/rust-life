@@ -69,6 +69,8 @@ const renderLoop = () => {
     requestAnimationFrame(renderLoop);
 };
 
+universe.initialize_cells();
+
 drawGrid();
 drawCells();
 

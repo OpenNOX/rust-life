@@ -43,16 +43,24 @@ impl Universe {
         let height = 64;
 
         let cells = (0..width * height)
-            .map(|i| {
-                if i % 2 == 0 || i % 7 == 0 {
-                    Cell::Alive
-                } else {
-                    Cell::Dead
-                }
-            })
+            .map(|_i| Cell::Dead)
             .collect();
 
         Universe { width, height, cells }
+    }
+
+    pub fn initialize_cells(&mut self) {
+        let cell_indexes = vec![
+            self.get_index(1, 1),
+            self.get_index(2, 2),
+            self.get_index(2, 3),
+            self.get_index(3, 1),
+            self.get_index(3, 2),
+        ];
+
+        for cell_index in cell_indexes {
+            self.cells[cell_index] = Cell::Alive;
+        }
     }
 
     pub fn render(&self) -> String {
