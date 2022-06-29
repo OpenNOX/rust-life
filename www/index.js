@@ -38,9 +38,16 @@ const getIndex = (row, column) => {
     return row * width + column;
 };
 
+const cellIsAlive = (cellIndex, cells) => {
+    const byte = Math.floor(cellIndex / 8);
+    const mask = 1 << (cellIndex % 8);
+
+    return (cells[byte] & mask) === mask;
+}
+
 const drawCells = () => {
     const cellsPtr = universe.cells();
-    const cells = new Uint8Array(memory.buffer, cellsPtr, width * height);
+    const cells = new Uint8Array(memory.buffer, cellsPtr, width * height / 8);
 
     canvasContext.beginPath();
 
@@ -48,7 +55,7 @@ const drawCells = () => {
         for (let col = 0; col < width; col++) {
             const index = getIndex(row, col);
 
-            canvasContext.fillStyle = cells[index] == Cell.Dead ? DEAD_COLOR : ALIVE_COLOR;
+            canvasContext.fillStyle = cellIsAlive(index, cells) ? ALIVE_COLOR : DEAD_COLOR;
             canvasContext.fillRect(
                 col * (CELL_SIZE_PX + 1) + 1,
                 row * (CELL_SIZE_PX + 1) + 1,
