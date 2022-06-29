@@ -3,6 +3,8 @@ mod utils;
 use std::fmt;
 use wasm_bindgen::prelude::*;
 
+extern crate js_sys;
+
 // When th&e `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
 #[cfg(feature = "wee_alloc")]
@@ -43,24 +45,16 @@ impl Universe {
         let height = 64;
 
         let cells = (0..width * height)
-            .map(|_i| Cell::Dead)
+            .map(|i| {
+                if js_sys::Math::random() < 0.5 {
+                    Cell::Alive
+                } else {
+                    Cell::Dead
+                }
+            })
             .collect();
 
         Universe { width, height, cells }
-    }
-
-    pub fn initialize_cells(&mut self) {
-        let cell_indexes = vec![
-            self.get_index(1, 1),
-            self.get_index(2, 2),
-            self.get_index(2, 3),
-            self.get_index(3, 1),
-            self.get_index(3, 2),
-        ];
-
-        for cell_index in cell_indexes {
-            self.cells[cell_index] = Cell::Alive;
-        }
     }
 
     pub fn render(&self) -> String {
