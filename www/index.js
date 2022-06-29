@@ -15,24 +15,6 @@ canvas.height = (CELL_SIZE_PX + 1) * height + 1;
 canvas.width = (CELL_SIZE_PX + 1) * width + 1;
 const canvasContext = canvas.getContext("2d");
 
-canvas.addEventListener("click", event => {
-    const boundingRect = canvas.getBoundingClientRect();
-
-    const scaleX = canvas.width / boundingRect.width;
-    const scaleY = canvas.height / boundingRect.height;
-
-    const canvasTop = (event.clientY - boundingRect.top) * scaleY;
-    const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
-
-    const row = Math.min(Math.floor(canvasTop / (CELL_SIZE_PX + 1)), height - 1);
-    const column = Math.min(Math.floor(canvasLeft / (CELL_SIZE_PX + 1)), width - 1);
-
-    universe.toggle_cell(row, column);
-
-    drawGrid();
-    drawCells();
-});
-
 const drawGrid = () => {
     canvasContext.beginPath();
     canvasContext.strokeStyle = GRID_COLOR;
@@ -85,33 +67,40 @@ const drawCells = () => {
     canvasContext.stroke();
 };
 
+const render = () => {
+    drawGrid();
+    drawCells();
+};
+
 let animationId = null;
 const renderLoop = () => {
     universe.tick();
 
-    drawGrid();
-    drawCells();
+    render();
 
     animationId = requestAnimationFrame(renderLoop);
 };
 
 universe.initialize_cells();
 
-drawGrid();
-drawCells();
+render();
 
 const playPauseButton = document.getElementById("play-pause");
+const stepForwardButton = document.getElementById("step-forward");
 
 const playSimulation = () => {
   playPauseButton.textContent = "⏸︎";
+  stepForwardButton.disabled = true;
   renderLoop();
 };
 
 const pauseSimulation = () => {
   playPauseButton.textContent = "▶";
+  stepForwardButton.disabled = false;
   cancelAnimationFrame(animationId);
   animationId = null;
 };
+pauseSimulation();
 
 playPauseButton.addEventListener("click", _ => {
     if (animationId === null) {
@@ -121,4 +110,25 @@ playPauseButton.addEventListener("click", _ => {
     }
 });
 
-pauseSimulation();
+stepForwardButton.addEventListener("click", _ => {
+    universe.tick();
+
+    render();
+});
+
+canvas.addEventListener("click", event => {
+    const boundingRect = canvas.getBoundingClientRect();
+
+    const scaleX = canvas.width / boundingRect.width;
+    const scaleY = canvas.height / boundingRect.height;
+
+    const canvasTop = (event.clientY - boundingRect.top) * scaleY;
+    const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
+
+    const row = Math.min(Math.floor(canvasTop / (CELL_SIZE_PX + 1)), height - 1);
+    const column = Math.min(Math.floor(canvasLeft / (CELL_SIZE_PX + 1)), width - 1);
+
+    universe.toggle_cell(row, column);
+
+    render();
+});

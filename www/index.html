@@ -15,11 +15,25 @@
         align-items: center;
         justify-content: center;
       }
+
+      #simulation-step-controls {
+        display: table;
+      }
+
+      #simulation-step-controls button {
+        display: table-cell;
+        margin: 1rem 1.5rem;
+        padding: 0.25rem 0.75rem;
+      }
     </style>
   </head>
   <body>
     <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
-    <button id="play-pause"></button>
+    <div id="simulation-step-controls">
+        <button id="step-backward" disabled>⏪</button>
+        <button id="play-pause"></button>
+        <button id="step-forward">⏩</button>
+    </div>
     <canvas id="game-of-life-canvas"></canvas>
     <script src="./bootstrap.js"></script>
   </body>
