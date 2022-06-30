@@ -16,6 +16,7 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 pub struct Universe {
     width: u32,
     height: u32,
+    cell_count: usize,
     cells: FixedBitSet,
 }
 
@@ -25,14 +26,18 @@ impl Universe {
         let cell_count = (width * height) as usize;
         let cells = FixedBitSet::with_capacity(cell_count);
 
-        Universe { width, height, cells }
+        Universe { width, height, cell_count, cells }
     }
 
     pub fn initialize_cells(&mut self) {
-        let cell_count = (self.width * self.height) as usize;
-
-        for i in 0..cell_count {
+        for i in 0..self.cell_count {
             self.cells.set(i, js_sys::Math::random() < 0.5);
+        }
+    }
+
+    pub fn clear_cells(&mut self) {
+        for i in 0..self.cell_count {
+            self.cells.set(i, false);
         }
     }
 

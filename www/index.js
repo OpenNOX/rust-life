@@ -14,6 +14,8 @@ const playPauseButton = document.getElementById("play-pause");
 const stepForwardButton = document.getElementById("step-forward");
 const tickStepCountRangeLabel = document.getElementById("tick-step-count-label");
 const tickStepCountRange = document.getElementById("tick-step-count");
+const resetUniverseButton = document.getElementById("reset-universe");
+const clearUniverseButton = document.getElementById("clear-universe");
 
 const canvas = document.getElementById("game-of-life-canvas");
 canvas.height = (CELL_SIZE_PX + 1) * height + 1;
@@ -124,6 +126,18 @@ stepForwardButton.addEventListener("click", _ => {
 
 tickStepCountRange.addEventListener("input", _ => {
     tickStepCountRangeLabel.innerHTML = `<b>Tick Step Count:</b> ${tickStepCountRange.value}`;
+});
+
+resetUniverseButton.addEventListener("click", _ => {
+    universe.initialize_cells();
+
+    render();
+});
+
+clearUniverseButton.addEventListener("click", _ => {
+    universe.clear_cells();
+
+    render();
 });
 
 canvas.addEventListener("click", event => {

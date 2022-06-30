@@ -8,15 +8,17 @@
   <body>
     <h1>Rust Life</h1>
 
-    <div id="simulation-wrapper">
-      <div id="simulation-step-controls">
-          <button id="step-backward" disabled>⏪</button>
-          <button id="play-pause"></button>
-          <button id="step-forward">⏩</button>
-          <div>
-            <label id="tick-step-count-label" for="tick-step-count"><b>Tick Step Count:</b> 1</label>
-            <input id="tick-step-count" type="range" min="1" max="100" value="1"/>
-          </div>
+    <div id="wrapper">
+      <div id="step-controls">
+        <button id="step-backward" disabled>⏪</button>
+        <button id="play-pause"></button>
+        <button id="step-forward">⏩</button>
+        <div>
+          <label id="tick-step-count-label" for="tick-step-count"><b>Tick Step Count:</b> 1</label>
+          <input id="tick-step-count" type="range" min="1" max="100" value="1"/>
+        </div>
+        <button id="reset-universe">Reset Universe</button>
+        <button id="clear-universe">Clear Universe</button>
       </div>
 
       <canvas id="game-of-life-canvas"></canvas>
