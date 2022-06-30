@@ -1,40 +1,28 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link rel="stylesheet" href="index.css">
     <meta charset="utf-8">
-    <title>Hello wasm-pack!</title>
-    <style>
-      body {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-      }
-
-      #simulation-step-controls {
-        display: table;
-      }
-
-      #simulation-step-controls button {
-        display: table-cell;
-        margin: 1rem 1.5rem;
-        padding: 0.25rem 0.75rem;
-      }
-    </style>
+    <title>Rust Life</title>
   </head>
   <body>
-    <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
-    <div id="simulation-step-controls">
-        <button id="step-backward" disabled>⏪</button>
-        <button id="play-pause"></button>
-        <button id="step-forward">⏩</button>
+    <h1>Rust Life</h1>
+
+    <div id="simulation-wrapper">
+      <div id="simulation-step-controls">
+          <button id="step-backward" disabled>⏪</button>
+          <button id="play-pause"></button>
+          <button id="step-forward">⏩</button>
+          <div>
+            <label id="tick-step-count-label" for="tick-step-count"><b>Tick Step Count:</b> 1</label>
+            <input id="tick-step-count" type="range" min="1" max="100" value="1"/>
+          </div>
+      </div>
+
+      <canvas id="game-of-life-canvas"></canvas>
     </div>
-    <canvas id="game-of-life-canvas"></canvas>
+
+    <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
     <script src="./bootstrap.js"></script>
   </body>
 </html>

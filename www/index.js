@@ -10,6 +10,11 @@ const width = 64;
 const height = 64;
 const universe = Universe.new(width, height);
 
+const playPauseButton = document.getElementById("play-pause");
+const stepForwardButton = document.getElementById("step-forward");
+const tickStepCountRangeLabel = document.getElementById("tick-step-count-label");
+const tickStepCountRange = document.getElementById("tick-step-count");
+
 const canvas = document.getElementById("game-of-life-canvas");
 canvas.height = (CELL_SIZE_PX + 1) * height + 1;
 canvas.width = (CELL_SIZE_PX + 1) * width + 1;
@@ -74,7 +79,9 @@ const render = () => {
 
 let animationId = null;
 const renderLoop = () => {
-    universe.tick();
+    for (let i = 0; i < tickStepCountRange.value; i++) {
+        universe.tick();
+    }
 
     render();
 
@@ -84,9 +91,6 @@ const renderLoop = () => {
 universe.initialize_cells();
 
 render();
-
-const playPauseButton = document.getElementById("play-pause");
-const stepForwardButton = document.getElementById("step-forward");
 
 const playSimulation = () => {
   playPauseButton.textContent = "⏸︎";
@@ -111,9 +115,15 @@ playPauseButton.addEventListener("click", _ => {
 });
 
 stepForwardButton.addEventListener("click", _ => {
-    universe.tick();
+    for (let i = 0; i < tickStepCountRange.value; i++) {
+        universe.tick();
+    }
 
     render();
+});
+
+tickStepCountRange.addEventListener("input", _ => {
+    tickStepCountRangeLabel.innerHTML = `<b>Tick Step Count:</b> ${tickStepCountRange.value}`;
 });
 
 canvas.addEventListener("click", event => {
