@@ -58,16 +58,19 @@ export default class Simulation {
     /**
      * Run the simulation.
      */
-    public run(): void {
-        this.step();
-        this.animationId = requestAnimationFrame(this.run.bind(this));
+    public run(stepTickCount: number): void {
+        this.step(stepTickCount);
+        this.animationId = requestAnimationFrame(this.run.bind(this, stepTickCount));
     }
 
     /**
      * Step through the simulation.
      */
-    public step(): void {
-        this.universe.tick();
+    public step(stepTickCount: number): void {
+        for (let i = 0; i < stepTickCount; i++) {
+            this.universe.tick();
+        }
+
         this.renderUniverse();
     }
 

@@ -11,15 +11,17 @@ export default abstract class SimulationHud {
         const playPauseButton = <HTMLButtonElement> document.getElementById("play-pause");
         const stepForwardButton = <HTMLButtonElement> document.getElementById("step-forward");
         const tickStepCountRangeLabel = <HTMLLabelElement> document.getElementById("tick-step-count-label");
-        const tickStepCountRange = <HTMLInputElement> document.getElementById("tick-step-count");
+        const stepTickCountRange = <HTMLInputElement> document.getElementById("tick-step-count");
         const resetUniverseButton = <HTMLButtonElement> document.getElementById("reset-universe");
         const clearUniverseButton = <HTMLButtonElement> document.getElementById("clear-universe");
+
+        let stepTickCount = parseInt(stepTickCountRange.value);
 
         playPauseButton.addEventListener("click", _ => {
             if (simulation.isRunning()) {
                 playPauseButton.textContent = "⏸︎";
                 stepForwardButton.setAttribute(disabledAttribute, "");
-                simulation.run();
+                simulation.run(stepTickCount);
             } else {
                 playPauseButton.textContent = "▶";
                 stepForwardButton.removeAttribute(disabledAttribute);
@@ -28,11 +30,13 @@ export default abstract class SimulationHud {
         });
 
         stepForwardButton.addEventListener("click", _ => {
-            simulation.step();
+            simulation.step(stepTickCount);
         });
 
-        tickStepCountRange.addEventListener("input", _ => {
-            tickStepCountRangeLabel.innerHTML = `<b>Tick Step Count:</b> ${tickStepCountRange.value}`;
+        stepTickCountRange.addEventListener("input", _ => {
+            tickStepCountRangeLabel.innerHTML = `<b>Step Tick Count:</b> ${stepTickCountRange.value}`;
+
+            stepTickCount = parseInt(stepTickCountRange.value);
         });
 
         resetUniverseButton.addEventListener("click", _ => {
