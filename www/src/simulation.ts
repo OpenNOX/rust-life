@@ -2,10 +2,7 @@ import { IVector2 } from "./interfaces";
 import { Universe } from "rust-life";
 import { memory } from "rust-life/rust_life_bg.wasm";
 
-export default class UniverseManager {
-    /** @public Rust Universe interface. */
-    public universe: Universe;
-
+export default class Simulation {
     /** @readonly Cell size in pixels. */
     private readonly CELL_SIZE: number = 8;
 
@@ -24,11 +21,17 @@ export default class UniverseManager {
     /** @private Number of cells universe is wide. */
     private width: number;
 
+    /** @private Rust Universe interface. */
+    private universe: Universe;
+
     /** @private Canvas' 2D rendering context. */
     private canvasContext: CanvasRenderingContext2D;
 
+    /** @private Renderer's animation request ID. */
+    private animationId: number = null;
+
     /**
-     * Initializes a new instance of the UniverseManager class.
+     * Initializes a new instance of the Simulation class.
      * @param canvasId HTML Canvas element's ID to draw universe on.
      * @param width Number of cells universe is wide.
      * @param height Number of cells universe is high.
@@ -50,9 +53,53 @@ export default class UniverseManager {
     }
 
     /**
+     * Run the simulation.
+     */
+    public run(): void {
+        this.step();
+        this.animationId = requestAnimationFrame(this.run.bind(this));
+    }
+
+    /**
+     * Step through the simulation.
+     */
+    public step(): void {
+        this.universe.tick();
+        this.renderUniverse();
+    }
+
+    /**
+     * Pause the simulation.
+     */
+    public pause(): void {
+        cancelAnimationFrame(this.animationId);
+        this.animationId = null;
+    }
+
+    /**
+     * Reset the simulation.
+     */
+    public reset(): void {
+        this.universe.initialize_cells();
+        this.renderUniverse();
+    }
+
+    /**
+     * Clear the simulation's universe of all alive cells.
+     */
+    public clear(): void {
+        this.universe.clear_cells();
+        this.renderUniverse();
+    }
+
+    public isRunning(): boolean {
+        return this.animationId === null;
+    }
+
+    /**
      * Draw the universe to the canvas.
      */
-    public renderUniverse(): void {
+    private renderUniverse(): void {
         this.renderGrid();
         this.renderCells();
     }
