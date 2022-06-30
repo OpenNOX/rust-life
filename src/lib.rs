@@ -41,9 +41,8 @@ impl Universe {
         }
     }
 
-    pub fn toggle_cell(&mut self, row: u32, column: u32) {
-        let index = self.get_index(row, column);
-        self.cells.set(index, !self.cells[index]);
+    pub fn toggle_cell(&mut self, cell_index: usize) {
+        self.cells.set(cell_index, !self.cells[cell_index]);
     }
 
     pub fn tick(&mut self) {
