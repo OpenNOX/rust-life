@@ -1,6 +1,7 @@
 import { IVector2 } from "./interfaces";
 import { Universe } from "rust-life";
 import { memory } from "rust-life/rust_life_bg.wasm";
+import SimulationHud from "./simulation-hud";
 
 export default class Simulation {
     /** @readonly Cell size in pixels. */
@@ -43,13 +44,15 @@ export default class Simulation {
 
         this.universe.initialize_cells();
 
-        const canvas = <HTMLCanvasElement>document.getElementById(canvasId)
+        const canvas = <HTMLCanvasElement> document.getElementById(canvasId)
         canvas.height = (this.CELL_SIZE + 1) * height + 1;
         canvas.width = (this.CELL_SIZE + 1) * width + 1;
         this.canvasContext = canvas.getContext("2d");
 
         this.registerCanvasEventListeners(canvas);
         this.renderUniverse();
+
+        SimulationHud.registerEventListeners(this);
     }
 
     /**
