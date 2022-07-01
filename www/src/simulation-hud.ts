@@ -19,11 +19,11 @@ export default abstract class SimulationHud {
 
         playPauseButton.addEventListener("click", _ => {
             if (simulation.isRunning()) {
-                playPauseButton.textContent = "⏸︎";
+                playPauseButton.innerHTML = '<span class="oi" data-glyph="media-pause"></span>';
                 stepForwardButton.setAttribute(disabledAttribute, "");
                 simulation.run(stepTickCount);
             } else {
-                playPauseButton.textContent = "▶";
+                playPauseButton.innerHTML = '<span class="oi" data-glyph="media-play"></span>';
                 stepForwardButton.removeAttribute(disabledAttribute);
                 simulation.pause();
             }

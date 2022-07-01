@@ -6,22 +6,25 @@
     <title>Rust Life</title>
   </head>
   <body>
-    <h1>Rust Life</h1>
+    <div id="header">
+      <h1>Rust Life</h1>
+    </div>
 
     <div id="wrapper">
-      <div id="step-controls">
-        <button id="step-backward" disabled>⏪</button>
-        <button id="play-pause">▶</button>
-        <button id="step-forward">⏩</button>
+      <canvas id="game-of-life-canvas"></canvas>
+
+      <fieldset id="step-controls">
+        <legend>Step Controls</legend>
+        <button id="step-backward" disabled><span class="oi" data-glyph="media-skip-backward"></span></button>
+        <button id="play-pause"><span class="oi" data-glyph="media-play"></span></button>
+        <button id="step-forward"><span class="oi" data-glyph="media-skip-forward"></span></button>
+        <button id="reset-universe">Reset Universe</button>
+        <button id="clear-universe">Clear Universe</button>
         <div>
           <label id="tick-step-count-label" for="tick-step-count"><b>Step Tick Count:</b> 1</label>
           <input id="tick-step-count" type="range" min="1" max="100" value="1"/>
         </div>
-        <button id="reset-universe">Reset Universe</button>
-        <button id="clear-universe">Clear Universe</button>
-      </div>
-
-      <canvas id="game-of-life-canvas"></canvas>
+      </fieldset>
     </div>
 
     <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>

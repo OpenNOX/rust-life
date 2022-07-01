@@ -4,23 +4,23 @@ import { memory } from "rust-life/rust_life_bg.wasm";
 import SimulationHud from "./simulation-hud";
 
 export default class Simulation {
-    /** @readonly Cell size in pixels. */
-    private readonly CELL_SIZE: number = 8;
-
     /** @readonly Color of grid lines. */
-    private readonly GRID_COLOR: string = "#CCCCCC";
+    private readonly GRID_COLOR: string = "#303031";
 
     /** @readonly Color of cell if alive. */
-    private readonly ALIVE_COLOR: string = "#000000";
-
-    /** @readonly Color of cell if dead. */
-    private readonly DEAD_COLOR: string = "#FFFFFF";
+    private readonly ALIVE_COLOR: string = "#D4D4D4";
 
     /** @private Number of cells universe is high. */
     private height: number;
 
     /** @private Number of cells universe is wide. */
     private width: number;
+
+    /** @private Cell size in pixels. */
+    private cellSize: number;
+
+    /** @private Grid size in pixels. */
+    private gridSize: number;
 
     /** @private Rust Universe interface. */
     private universe: Universe;
@@ -36,17 +36,21 @@ export default class Simulation {
      * @param canvasId HTML Canvas element's ID to draw universe on.
      * @param width Number of cells universe is wide.
      * @param height Number of cells universe is high.
+     * @param cellSize Cell size in pixels.
+     * @param gridSize Grid size in pixels.
      */
-    constructor(canvasId: string, width: number, height: number) {
+    constructor(canvasId: string, width: number, height: number, cellSize: number, gridSize: number) {
         this.width = width;
         this.height = height;
+        this.cellSize = cellSize;
+        this.gridSize = gridSize;
         this.universe = Universe.new(width, height);
 
         this.universe.initialize_cells();
 
         const canvas = <HTMLCanvasElement> document.getElementById(canvasId)
-        canvas.height = (this.CELL_SIZE + 1) * height + 1;
-        canvas.width = (this.CELL_SIZE + 1) * width + 1;
+        canvas.height = this.getDimensionSize(height);
+        canvas.width = this.getDimensionSize(width);
         this.canvasContext = canvas.getContext("2d");
 
         this.registerCanvasEventListeners(canvas);
@@ -98,6 +102,10 @@ export default class Simulation {
         this.renderUniverse();
     }
 
+    /**
+     * Check if simulation is running.
+     * @returns True if simulation is running, otherwise false.
+     */
     public isRunning(): boolean {
         return this.animationId === null;
     }
@@ -106,6 +114,8 @@ export default class Simulation {
      * Draw the universe to the canvas.
      */
     private renderUniverse(): void {
+        this.canvasContext.clearRect(0, 0, this.canvasContext.canvas.width, this.canvasContext.canvas.height);
+
         this.renderGrid();
         this.renderCells();
     }
@@ -115,16 +125,21 @@ export default class Simulation {
      */
     private renderGrid(): void {
         this.canvasContext.beginPath();
+        this.canvasContext.lineWidth = this.gridSize;
         this.canvasContext.strokeStyle = this.GRID_COLOR;
 
         for (let i = 0; i <= this.width; i++) {
-            this.canvasContext.moveTo(i * (this.CELL_SIZE + 1) + 1, 0);
-            this.canvasContext.lineTo(i * (this.CELL_SIZE + 1) + 1, (this.CELL_SIZE + 1) * this.height + 1);
+            let gridLineCoordinate = this.getGridLineCoordinate(i);
+
+            this.canvasContext.moveTo(gridLineCoordinate, 0);
+            this.canvasContext.lineTo(gridLineCoordinate, this.canvasContext.canvas.height);
         }
 
         for (let i = 0; i <= this.height; i++) {
-            this.canvasContext.moveTo(0, i * (this.CELL_SIZE + 1) + 1);
-            this.canvasContext.lineTo((this.CELL_SIZE + 1) * this.width + 1, i * (this.CELL_SIZE + 1) + 1);
+            let gridLineCoordinate = this.getGridLineCoordinate(i);
+
+            this.canvasContext.moveTo(0, gridLineCoordinate);
+            this.canvasContext.lineTo(this.canvasContext.canvas.width, gridLineCoordinate);
         }
 
         this.canvasContext.stroke();
@@ -142,13 +157,14 @@ export default class Simulation {
         for (let row = 0; row < this.height; row++) {
             for (let col = 0; col < this.width; col++) {
                 const index = this.getCellIndex(row, col);
+                const position = this.getPixelCoordinates(col, row);
 
-                this.canvasContext.fillStyle = this.cellIsAlive(index, cells) ? this.ALIVE_COLOR : this.DEAD_COLOR;
-                this.canvasContext.fillRect(
-                    col * (this.CELL_SIZE + 1) + 1,
-                    row * (this.CELL_SIZE + 1) + 1,
-                    this.CELL_SIZE,
-                    this.CELL_SIZE);
+                if (this.cellIsAlive(index, cells)) {
+                    this.canvasContext.fillStyle = this.ALIVE_COLOR;
+                    this.canvasContext.fillRect(position.x, position.y, this.cellSize, this.cellSize);
+                } else {
+                    this.canvasContext.clearRect(position.x, position.y, this.cellSize, this.cellSize);
+                }
             }
         }
 
@@ -194,9 +210,40 @@ export default class Simulation {
         const canvasTop = (event.clientY - boundingRect.top) * scaleY;
 
         return {
-            x: Math.min(Math.floor(canvasLeft / (this.CELL_SIZE + 1)), this.width - 1),
-            y: Math.min(Math.floor(canvasTop / (this.CELL_SIZE + 1)), this.height - 1),
+            x: Math.min(Math.floor(canvasLeft / (this.cellSize + this.gridSize)), this.width - 1),
+            y: Math.min(Math.floor(canvasTop / (this.cellSize + this.gridSize)), this.height - 1),
         };
+    }
+
+    /**
+     * Convert cell coordinates into cell's top-left canvas coordinates in pixels.
+     * @param x Cell's x-axis coordinate.
+     * @param y Cell's y-axis coordinate.
+     * @returns Calculated cell's top-left canvas coordinates in pixels.
+     */
+    private getPixelCoordinates(x: number, y: number): IVector2 {
+        return {
+            x: x * (this.cellSize + this.gridSize) + this.gridSize,
+            y: y * (this.cellSize + this.gridSize) + this.gridSize,
+        };
+    }
+
+    /**
+     * Convert axis index into grid line coordinate in pixels.
+     * @param axisIndex Axis index to be used in calculation.
+     * @returns Calculated grid line coordinate in pixels.
+     */
+    private getGridLineCoordinate(axisIndex: number): number {
+        return (this.gridSize / 2) + (axisIndex * (this.cellSize + this.gridSize));
+    }
+
+    /**
+     * Convert cell count into pixels.
+     * @param cellCount Number of cells in dimension.
+     * @returns Calculated dimension size in pixels.
+     */
+    private getDimensionSize(cellCount: number): number {
+        return (this.cellSize + this.gridSize) * cellCount + this.gridSize;
     }
 
     /**
