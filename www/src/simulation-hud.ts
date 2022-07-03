@@ -10,12 +10,25 @@ export default abstract class SimulationHud {
 
         const playPauseButton = <HTMLButtonElement> document.getElementById("play-pause");
         const stepForwardButton = <HTMLButtonElement> document.getElementById("step-forward");
-        const tickStepCountRangeLabel = <HTMLLabelElement> document.getElementById("tick-step-count-label");
-        const stepTickCountRange = <HTMLInputElement> document.getElementById("tick-step-count");
+        const tickStepCountRange = <HTMLInputElement> document.getElementById("tick-step-count-range");
         const resetUniverseButton = <HTMLButtonElement> document.getElementById("reset-universe");
         const clearUniverseButton = <HTMLButtonElement> document.getElementById("clear-universe");
+        const inputGroups = document.getElementsByClassName("input-group");
 
-        let stepTickCount = parseInt(stepTickCountRange.value);
+        for (let i = 0; i < inputGroups.length; i++) {
+            const range = <HTMLInputElement> inputGroups[i].querySelector("input[type='range']");
+            const number = <HTMLInputElement> inputGroups[i].querySelector("input[type='number']");
+
+            range.addEventListener("input", _ => {
+                number.value = range.value;
+            });
+
+            number.addEventListener("input", _ => {
+                range.value = number.value;
+            });
+        }
+
+        let stepTickCount = parseInt(tickStepCountRange.value);
 
         playPauseButton.addEventListener("click", _ => {
             if (simulation.isRunning()) {
@@ -33,10 +46,8 @@ export default abstract class SimulationHud {
             simulation.step(stepTickCount);
         });
 
-        stepTickCountRange.addEventListener("input", _ => {
-            tickStepCountRangeLabel.innerHTML = `<b>Step Tick Count:</b> ${stepTickCountRange.value}`;
-
-            stepTickCount = parseInt(stepTickCountRange.value);
+        tickStepCountRange.addEventListener("input", _ => {
+            stepTickCount = parseInt(tickStepCountRange.value);
         });
 
         resetUniverseButton.addEventListener("click", _ => {

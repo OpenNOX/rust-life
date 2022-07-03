@@ -2,9 +2,12 @@ mod utils;
 
 extern crate fixedbitset;
 extern crate js_sys;
+extern crate web_sys;
 
 use fixedbitset::FixedBitSet;
+use std::ops::Add;
 use wasm_bindgen::prelude::*;
+use web_sys::console;
 
 // When th&e `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -12,49 +15,76 @@ use wasm_bindgen::prelude::*;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
+pub struct Timer<'a> {
+    name: &'a str,
+}
+
+impl<'a> Timer<'a> {
+    pub fn new(name: &'a str) -> Timer<'a> {
+        console::time_with_label(name);
+        Timer { name }
+    }
+}
+
+impl<'a> Drop for Timer<'a> {
+    fn drop(&mut self) {
+        console::time_end_with_label(self.name);
+    }
+}
+
 #[wasm_bindgen]
 pub struct Universe {
     width: u32,
     height: u32,
     cell_count: usize,
-    cells: FixedBitSet,
+    cells_buffers: [FixedBitSet; 2],
+    current_buffer_index: usize,
+    next_buffer_index: usize,
 }
 
 #[wasm_bindgen]
 impl Universe {
     pub fn new(width: u32, height: u32) -> Universe {
         let cell_count = (width * height) as usize;
-        let cells = FixedBitSet::with_capacity(cell_count);
+        let cells_buffers = [
+            FixedBitSet::with_capacity(cell_count),
+            FixedBitSet::with_capacity(cell_count),
+        ];
 
-        Universe { width, height, cell_count, cells }
+        Universe { width, height, cell_count, cells_buffers, current_buffer_index: 0, next_buffer_index: 0 }
     }
 
     pub fn initialize_cells(&mut self) {
         for i in 0..self.cell_count {
-            self.cells.set(i, js_sys::Math::random() < 0.5);
+            self.cells_buffers[self.next_buffer_index].set(i, js_sys::Math::random() < 0.5);
         }
     }
 
     pub fn clear_cells(&mut self) {
         for i in 0..self.cell_count {
-            self.cells.set(i, false);
+            self.cells_buffers[self.next_buffer_index].set(i, false);
         }
     }
 
     pub fn toggle_cell(&mut self, cell_index: usize) {
-        self.cells.set(cell_index, !self.cells[cell_index]);
+        self.cells_buffers[self.next_buffer_index].set(
+            cell_index,
+            !self.cells_buffers[self.current_buffer_index][cell_index]);
     }
 
     pub fn tick(&mut self) {
-        let mut next_cells = self.cells.clone();
+        let _timer = Timer::new("Universe::tick");
+
+        self.current_buffer_index = self.next_buffer_index;
+        self.next_buffer_index = self.next_buffer_index.add(1).wrapping_rem_euclid(self.cells_buffers.len());
 
         for row in 0..self.height {
             for column in 0..self.width {
                 let index = self.get_index(row, column);
-                let cell = self.cells[index];
+                let cell = self.cells_buffers[self.current_buffer_index][index];
                 let live_neighbor_count = self.get_live_neighbor_count(row, column);
 
-                next_cells.set(index, match (cell, live_neighbor_count) {
+                self.cells_buffers[self.next_buffer_index].set(index, match (cell, live_neighbor_count) {
                     // Rule 1: Any live cell with fewer than two live neighbors dies, as if caused
                     // by underpopulation.
                     (true, live_neighbor_count) if live_neighbor_count < 2 => false,
@@ -76,12 +106,10 @@ impl Universe {
                 });
             }
         }
-
-        self.cells = next_cells;
     }
 
     pub fn get_cells_as_ptr(&self) -> *const u32 {
-        self.cells.as_slice().as_ptr()
+        self.cells_buffers[self.next_buffer_index].as_slice().as_ptr()
     }
 
     fn get_index(&self, row: u32, column: u32) -> usize {
@@ -100,7 +128,7 @@ impl Universe {
                 let neighbor_column = (column + column_offset) % self.width;
                 let index = self.get_index(neighbor_row, neighbor_column);
 
-                count += self.cells[index] as u8;
+                count += self.cells_buffers[self.current_buffer_index][index] as u8;
             }
         }
 
@@ -110,12 +138,12 @@ impl Universe {
 
 impl Universe {
     pub fn get_cells(&self) -> &FixedBitSet {
-        &self.cells
+        &self.cells_buffers[self.next_buffer_index]
     }
 
     pub fn set_cells(&mut self, cells: &[(u32, u32)], enabled: bool) {
         for (row, column) in cells.iter().cloned() {
-            self.cells.set(self.get_index(row, column), enabled);
+            self.cells_buffers[self.next_buffer_index].set(self.get_index(row, column), enabled);
         }
     }
 }

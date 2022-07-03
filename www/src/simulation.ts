@@ -1,15 +1,9 @@
 import { IVector2 } from "./interfaces";
+import PerformanceMonitor from './performance-monitor';
 import { Universe } from "rust-life";
 import { memory } from "rust-life/rust_life_bg.wasm";
-import SimulationHud from "./simulation-hud";
 
 export default class Simulation {
-    /** @readonly Color of grid lines. */
-    private readonly GRID_COLOR: string = "#303031";
-
-    /** @readonly Color of cell if alive. */
-    private readonly ALIVE_COLOR: string = "#D4D4D4";
-
     /** @private Number of cells universe is high. */
     private height: number;
 
@@ -22,6 +16,12 @@ export default class Simulation {
     /** @private Grid size in pixels. */
     private gridSize: number;
 
+    /** @private Color of grid lines. */
+    private gridColor: string;
+
+    /** @private Color of cell if alive. */
+    private aliveColor: string;
+
     /** @private Rust Universe interface. */
     private universe: Universe;
 
@@ -31,6 +31,8 @@ export default class Simulation {
     /** @private Renderer's animation request ID. */
     private animationId: number = null;
 
+    private performanceMonitor: PerformanceMonitor;
+
     /**
      * Initializes a new instance of the Simulation class.
      * @param canvasId HTML Canvas element's ID to draw universe on.
@@ -38,12 +40,17 @@ export default class Simulation {
      * @param height Number of cells universe is high.
      * @param cellSize Cell size in pixels.
      * @param gridSize Grid size in pixels.
+     * @param gridColor Color of grid lines.
+     * @param aliveColor Color of cell if alive.
      */
-    constructor(canvasId: string, width: number, height: number, cellSize: number, gridSize: number) {
+    constructor(canvasId: string, width: number, height: number, cellSize: number, gridSize: number,
+        gridColor: string, aliveColor: string) {
         this.width = width;
         this.height = height;
         this.cellSize = cellSize;
         this.gridSize = gridSize;
+        this.gridColor = gridColor;
+        this.aliveColor = aliveColor;
         this.universe = Universe.new(width, height);
 
         this.universe.initialize_cells();
@@ -56,7 +63,7 @@ export default class Simulation {
         this.registerCanvasEventListeners(canvas);
         this.renderUniverse();
 
-        SimulationHud.registerEventListeners(this);
+        this.performanceMonitor = new PerformanceMonitor("performance-monitor-output");
     }
 
     /**
@@ -71,6 +78,8 @@ export default class Simulation {
      * Step through the simulation.
      */
     public step(stepTickCount: number): void {
+        this.performanceMonitor.render();
+
         for (let i = 0; i < stepTickCount; i++) {
             this.universe.tick();
         }
@@ -126,7 +135,7 @@ export default class Simulation {
     private renderGrid(): void {
         this.canvasContext.beginPath();
         this.canvasContext.lineWidth = this.gridSize;
-        this.canvasContext.strokeStyle = this.GRID_COLOR;
+        this.canvasContext.strokeStyle = this.gridColor;
 
         for (let i = 0; i <= this.width; i++) {
             let gridLineCoordinate = this.getGridLineCoordinate(i);
@@ -160,7 +169,7 @@ export default class Simulation {
                 const position = this.getPixelCoordinates(col, row);
 
                 if (this.cellIsAlive(index, cells)) {
-                    this.canvasContext.fillStyle = this.ALIVE_COLOR;
+                    this.canvasContext.fillStyle = this.aliveColor;
                     this.canvasContext.fillRect(position.x, position.y, this.cellSize, this.cellSize);
                 } else {
                     this.canvasContext.clearRect(position.x, position.y, this.cellSize, this.cellSize);

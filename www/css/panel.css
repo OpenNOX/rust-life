@@ -1,0 +1,56 @@
+#panel {
+    background-color: var(--panel-background-color);
+    border-right: 0.06rem solid var(--input-background-color);
+    padding: 0.5rem;
+    position: fixed;
+        top: 0;
+    width: var(--left-panel-width);
+    height: 100%;
+}
+
+#panel ul {
+    list-style: none;
+}
+
+#panel ul > li {
+    display: flex;
+    margin: 1.0rem 0;
+}
+
+#panel .button-group > button {
+    background-color: var(--input-background-color);
+    border-color: var(--foreground-color);
+    border-radius: 0.35rem;
+    color: var(--foreground-color);
+    cursor: pointer;
+    flex-grow: 1;
+    margin: 0 0.5rem;
+    padding: 0.35rem 0.65rem;
+}
+
+#panel .input-group {
+    align-items: center;
+}
+
+#panel .input-group > label {
+    flex-grow: 1;
+    font-weight: bold;
+    text-align: right;
+}
+
+#panel .input-group > input[type="range"] {
+    margin: 0 0.5rem;
+}
+
+#panel .input-group > input[type="number"] {
+    background-color: var(--input-background-color);
+    border-radius: 0.35rem;
+    color: var(--foreground-color);
+    padding: 0.35rem 0.65rem;
+    width: 5rem;
+}
+
+#panel .input-group > input[type="number"]:focus {
+    background-color: white;
+    color: black;
+}

@@ -3,28 +3,71 @@
   <head>
     <link rel="stylesheet" href="index.css">
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Rust Life</title>
   </head>
   <body>
-    <div id="header">
-      <h1>Rust Life</h1>
+    <div id="simulations-wrapper">
+      <canvas id="game-of-life-canvas"></canvas>
     </div>
 
-    <div id="wrapper">
-      <canvas id="game-of-life-canvas"></canvas>
+    <div id="panel">
+      <h2>Controls</h2>
+      <ul>
+        <li class="button-group">
+          <button id="step-backward" disabled><span class="oi" data-glyph="media-skip-backward"></span></button>
+          <button id="play-pause"><span class="oi" data-glyph="media-play"></span></button>
+          <button id="step-forward"><span class="oi" data-glyph="media-skip-forward"></span></button>
+          <button id="reset-universe">Reset</button>
+          <button id="clear-universe">Clear</button>
+        </li>
+        <li class="input-group">
+          <label>Simulation Speed</label>
+          <input id="simulation-speed-range" type="range" min="1" max="10" value="1"/>
+          <input id="simulation-speed-number" type="number" min="1" max="10" value="1"/>
+        </li>
+        <li class="input-group">
+          <label>FPS Cap</label>
+          <input id="fps-cap-range" type="range" min="1" max="360" value="60"/>
+          <input id="fps-cap-number" type="number" min="1" max="360" value="60"/>
+        </li>
+        <li class="input-group">
+          <label>Step Tick Count</label>
+          <input id="tick-step-count-range" type="range" min="1" max="100" value="1"/>
+          <input id="tick-step-count-number" type="number" min="1" max="100" value="1"/>
+        </li>
+      </ul>
 
-      <fieldset id="step-controls">
-        <legend>Step Controls</legend>
-        <button id="step-backward" disabled><span class="oi" data-glyph="media-skip-backward"></span></button>
-        <button id="play-pause"><span class="oi" data-glyph="media-play"></span></button>
-        <button id="step-forward"><span class="oi" data-glyph="media-skip-forward"></span></button>
-        <button id="reset-universe">Reset Universe</button>
-        <button id="clear-universe">Clear Universe</button>
-        <div>
-          <label id="tick-step-count-label" for="tick-step-count"><b>Step Tick Count:</b> 1</label>
-          <input id="tick-step-count" type="range" min="1" max="100" value="1"/>
-        </div>
-      </fieldset>
+      <h2>Instances (1); To Be Implemented</h2>
+      <ul>
+        <li>
+          <ul>
+            <li>
+              <input type="checkbox">
+            </li>
+            <li><span class="oi" data-glyph="reload"></span> Reset Selected Instances</li>
+            <li><span class="oi" data-glyph="ban"></span> Clear Selected Instances</li>
+            <li><span class="oi" data-glyph="x"></span> Delete Selected Instances</li>
+          </ul>
+        </li>
+        <li>
+          <ul>
+            <li>
+              <input type="checkbox"/>
+            </li>
+            <li>Default Instance</li>
+            <li><span class="oi" data-glyph="media-skip-backward"></span> Step Instance Backward</li>
+            <li><span class="oi" data-glyph="media-play"></span> Play/Pause Instance</li>
+            <li><span class="oi" data-glyph="media-skip-forward"></span> Step Instance Forward</li>
+            <li><span class="oi" data-glyph="reload"></span> Reset Instance</li>
+            <li><span class="oi" data-glyph="ban"></span> Clear Instance</li>
+            <li><span class="oi" data-glyph="x"></span> Delete Instance</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h2>Statistics</h2>
+      <pre id="performance-monitor-output"></pre>
     </div>
 
     <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
