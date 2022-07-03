@@ -3,6 +3,9 @@ name = "rust-life"
 version = "0.1.0"
 authors = ["Christopher Kaliszewski <ckaliszewski@gmail.com>"]
 edition = "2018"
+description = "Conway's Game of Life"
+repository = "https://github.com/OpenNOX/rust-life/"
+license = "MIT OR Apache-2.0"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
