@@ -1,6 +1,6 @@
 import { IVector2 } from "./interfaces";
 import PerformanceMonitor from './performance-monitor';
-import { Universe } from "rust-life";
+import { Simulation as Universe } from "rust-life";
 import { memory } from "rust-life/rust_life_bg.wasm";
 
 export default class Simulation {
