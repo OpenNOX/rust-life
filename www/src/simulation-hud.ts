@@ -5,7 +5,7 @@ export default abstract class SimulationHud {
      * Register simulation HUD's event listeners.
      * @param simulation Simulation that will be controlled through event listeners.
      */
-    public static registerEventListeners(simulation: Simulation) {
+    public static registerEventListeners(simulation: Simulation): void {
         const disabledAttribute = "disabled";
 
         const playPauseButton = <HTMLButtonElement> document.getElementById("play-pause");

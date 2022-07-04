@@ -54,3 +54,19 @@
     background-color: white;
     color: black;
 }
+
+#panel ul > li.instance-name {
+    flex-grow: 1;
+}
+
+#panel ul#simulation-instances-management {
+    display: flex;
+}
+
+#panel ul#simulation-instances > li {
+    display: block;
+}
+
+#panel ul#simulation-instances ul {
+    display: flex;
+}

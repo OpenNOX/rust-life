@@ -35,7 +35,7 @@ export default class Simulation {
 
     /**
      * Initializes a new instance of the Simulation class.
-     * @param canvasId HTML Canvas element's ID to draw universe on.
+     * @param canvas HTML Canvas element's ID to draw universe on.
      * @param width Number of cells universe is wide.
      * @param height Number of cells universe is high.
      * @param cellSize Cell size in pixels.
@@ -43,7 +43,7 @@ export default class Simulation {
      * @param gridColor Color of grid lines.
      * @param aliveColor Color of cell if alive.
      */
-    constructor(canvasId: string, width: number, height: number, cellSize: number, gridSize: number,
+    constructor(canvas: HTMLCanvasElement, width: number, height: number, cellSize: number, gridSize: number,
         gridColor: string, aliveColor: string) {
         this.width = width;
         this.height = height;
@@ -55,7 +55,6 @@ export default class Simulation {
 
         this.universe.initialize_cells();
 
-        const canvas = <HTMLCanvasElement> document.getElementById(canvasId)
         canvas.height = this.getDimensionSize(height);
         canvas.width = this.getDimensionSize(width);
         this.canvasContext = canvas.getContext("2d");

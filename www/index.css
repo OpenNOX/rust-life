@@ -27,12 +27,14 @@ body {
 
 canvas {
     border: 0.25rem solid var(--foreground-color);
+    margin: 1rem;
 }
 
 #simulations-wrapper {
     align-items: center;
     display: flex;
-    flex-direction: column;
+    /* flex-direction: row; */
+    flex-flow: row wrap;
     justify-content: center;
     padding-left: var(--left-panel-width);
     position: absolute;

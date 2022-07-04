@@ -8,7 +8,6 @@
   </head>
   <body>
     <div id="simulations-wrapper">
-      <canvas id="game-of-life-canvas"></canvas>
     </div>
 
     <div id="panel">
@@ -38,32 +37,27 @@
         </li>
       </ul>
 
-      <h2>Instances (1); To Be Implemented</h2>
-      <ul>
+      <h2>Instances</h2>
+      <ul id="simulation-instances-management">
         <li>
-          <ul>
-            <li>
-              <input type="checkbox">
-            </li>
-            <li><span class="oi" data-glyph="reload"></span> Reset Selected Instances</li>
-            <li><span class="oi" data-glyph="ban"></span> Clear Selected Instances</li>
-            <li><span class="oi" data-glyph="x"></span> Delete Selected Instances</li>
-          </ul>
+          <label for="select-all-instances">
+            <input type="checkbox" id="select-all-instances">
+          </label>
         </li>
+        <li class="instance-name">&nbsp;</li>
         <li>
-          <ul>
-            <li>
-              <input type="checkbox"/>
-            </li>
-            <li>Default Instance</li>
-            <li><span class="oi" data-glyph="media-skip-backward"></span> Step Instance Backward</li>
-            <li><span class="oi" data-glyph="media-play"></span> Play/Pause Instance</li>
-            <li><span class="oi" data-glyph="media-skip-forward"></span> Step Instance Forward</li>
-            <li><span class="oi" data-glyph="reload"></span> Reset Instance</li>
-            <li><span class="oi" data-glyph="ban"></span> Clear Instance</li>
-            <li><span class="oi" data-glyph="x"></span> Delete Instance</li>
-          </ul>
+          <button id="add-instance"><span class="oi" data-glyph="plus"></span></button>
+          <button id="step-selected-instances-backward" disabled>
+            <span class="oi" data-glyph="media-skip-backward"></span>
+          </button>
+          <button id="play-pause-selected-instances" disabled><span class="oi" data-glyph="media-play"></span></button>
+          <button id="step-selected-instances-forward" disabled><span class="oi" data-glyph="media-skip-forward"></span></button>
+          <button id="reset-selected-instances" disabled><span class="oi" data-glyph="reload"></span></button>
+          <button id="clear-selected-instances" disabled><span class="oi" data-glyph="ban"></span></button>
+          <button id="delete-selected-instances" disabled><span class="oi" data-glyph="x"></span></button>
         </li>
+      </ul>
+      <ul id="simulation-instances">
       </ul>
 
       <h2>Statistics</h2>
@@ -72,5 +66,28 @@
 
     <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
     <script src="./bootstrap.js"></script>
+
+    <template id="simulation-instance-row-template">
+      <li>
+        <ul>
+          <li>
+            <label>
+              <input type="checkbox"/>
+            </label>
+          </li>
+          <li class="instance-name">Default Instance</li>
+          <li>
+            <button class="step-instance-backward" disabled>
+              <span class="oi" data-glyph="media-skip-backward"></span>
+            </button>
+            <button class="play-pause-instance"><span class="oi" data-glyph="media-play"></span></button>
+            <button class="step-instance-forward"><span class="oi" data-glyph="media-skip-forward"></span></button>
+            <button class="reset-instance"><span class="oi" data-glyph="reload"></span></button>
+            <button class="clear-instance"><span class="oi" data-glyph="ban"></span></button>
+            <button class="delete-instance"><span class="oi" data-glyph="x"></span></button>
+          </li>
+        </ul>
+      </li>
+    </template>
   </body>
 </html>
