@@ -1,25 +1,35 @@
-mod timer;
-
 extern crate fixedbitset;
 extern crate js_sys;
 
-use crate::simulation::timer::Timer;
 use fixedbitset::FixedBitSet;
 use std::ops::Add;
 use wasm_bindgen::prelude::*;
 
+/// Conway's Game of Life cellular automaton simulation.
 #[wasm_bindgen]
 pub struct Simulation {
+    /// Width in cell count.
     width: u32,
+
+    /// Height in cell count.
     height: u32,
-    cell_count: usize,
+
+    /// Cells state buffers.
     cells_buffers: [FixedBitSet; 2],
+
+    /// Cells state previous buffer index.
+    previous_buffer_index: usize,
+
+    /// Cells state current buffer index.
     current_buffer_index: usize,
-    next_buffer_index: usize,
 }
 
 #[wasm_bindgen]
 impl Simulation {
+    /// Initializes a new instance of the [`Simulation`].
+    ///
+    /// * `width` - Width in cell count.
+    /// * `height` - Height in cell count.
     pub fn new(width: u32, height: u32) -> Simulation {
         let cell_count = (width * height) as usize;
         let cells_buffers = [
@@ -27,40 +37,64 @@ impl Simulation {
             FixedBitSet::with_capacity(cell_count),
         ];
 
-        Simulation { width, height, cell_count, cells_buffers, current_buffer_index: 0, next_buffer_index: 0 }
+        Simulation { width, height, cells_buffers, previous_buffer_index: 0, current_buffer_index: 0 }
     }
 
-    pub fn initialize_cells(&mut self) {
-        for i in 0..self.cell_count {
-            self.cells_buffers[self.next_buffer_index].set(i, js_sys::Math::random() < 0.5);
+    /// Initializes cells as alive based on `seed_percent`.
+    ///
+    /// * `seed_percent` - Chance for cells to be initialized as alive.
+    pub fn initialize_cells(&mut self, seed_percent: f64) {
+        for i in 0..(self.width * self.height) as usize {
+            self.cells_buffers[self.current_buffer_index].set(i, js_sys::Math::random() < seed_percent);
         }
     }
 
-    pub fn clear_cells(&mut self) {
-        for i in 0..self.cell_count {
-            self.cells_buffers[self.next_buffer_index].set(i, false);
-        }
-    }
+    /// Toggles cell state located at coordinates between alive and dead.
+    ///
+    /// * `x` - Cell x-axis coordinate.
+    /// * `y` - Cell y-axis coordinate.
+    pub fn toggle_cell(&mut self, x: u32, y: u32) {
+        let cell_index = self.get_cell_index(x, y);
 
-    pub fn toggle_cell(&mut self, cell_index: usize) {
-        self.cells_buffers[self.next_buffer_index].set(
+        self.cells_buffers[self.current_buffer_index].set(
             cell_index,
-            !self.cells_buffers[self.current_buffer_index][cell_index]);
+            !self.cells_buffers[self.previous_buffer_index][cell_index]);
     }
 
+    /// Sets all cells to a dead state.
+    pub fn clear_cells(&mut self) {
+        for i in 0..(self.width * self.height) as usize {
+            self.cells_buffers[self.current_buffer_index].set(i, false);
+        }
+    }
+
+    /// Gets pointer to the start of the cells buffer.
+    ///
+    /// * `get_current_cells` - Return current cells buffer if `true`, otherwise return previous cells buffer.
+    ///
+    /// **RETURN:** Pointer to the start of the cells buffer depending on the `get_current_cells` value.
+    pub fn get_cells_as_ptr(&self, get_current_cells: bool) -> *const u32 {
+        if get_current_cells {
+            self.cells_buffers[self.current_buffer_index].as_slice().as_ptr()
+        } else {
+            self.cells_buffers[self.previous_buffer_index].as_slice().as_ptr()
+        }
+    }
+
+    /// Advances [`Simulation`] one step according to Conway's Game of Life rules.
     pub fn tick(&mut self) {
-        let _timer = Timer::new("Simulation::tick");
+        self.previous_buffer_index = self.current_buffer_index;
+        self.current_buffer_index = self.current_buffer_index.add(1).wrapping_rem_euclid(self.cells_buffers.len());
 
-        self.current_buffer_index = self.next_buffer_index;
-        self.next_buffer_index = self.next_buffer_index.add(1).wrapping_rem_euclid(self.cells_buffers.len());
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let cell_index = self.get_cell_index(x, y);
+                let cell = self.cells_buffers[self.previous_buffer_index][cell_index];
+                let live_neighbor_count = self.get_alive_neighbor_count(y, x);
 
-        for row in 0..self.height {
-            for column in 0..self.width {
-                let index = self.get_index(row, column);
-                let cell = self.cells_buffers[self.current_buffer_index][index];
-                let live_neighbor_count = self.get_live_neighbor_count(row, column);
-
-                self.cells_buffers[self.next_buffer_index].set(index, match (cell, live_neighbor_count) {
+                self.cells_buffers[self.current_buffer_index].set(
+                    cell_index,
+                    match (cell, live_neighbor_count) {
                     // Rule 1: Any live cell with fewer than two live neighbors dies, as if caused
                     // by underpopulation.
                     (true, live_neighbor_count) if live_neighbor_count < 2 => false,
@@ -84,42 +118,38 @@ impl Simulation {
         }
     }
 
-    pub fn get_cells_as_ptr(&self) -> *const u32 {
-        self.cells_buffers[self.next_buffer_index].as_slice().as_ptr()
+    /// Gets calculated cell index.
+    ///
+    /// * `x` - Cell x-axis coordinate.
+    /// * `y` - Cell y-axis coordinate.
+    ///
+    /// **RETURNS:** Calculated cell index.
+    fn get_cell_index(&self, x: u32, y: u32) -> usize {
+        (y * self.width + x) as usize
     }
 
-    fn get_index(&self, row: u32, column: u32) -> usize {
-        (row * self.width + column) as usize
-    }
-
-    fn get_live_neighbor_count(&self, row: u32, column: u32) -> u8 {
-        let mut count = 0;
-        for row_offset in [self.height - 1, 0, 1].iter().cloned() {
-            for column_offset in [self.width - 1, 0, 1].iter().cloned() {
-                if row_offset == 0 && column_offset == 0 {
+    /// Gets alive neighbor count.
+    ///
+    /// * `x` - Cell x-axis coordinate.
+    /// * `y` - Cell y-axis coordinate.
+    ///
+    /// **RETURNS:** Number of alive neighboring cells.
+    fn get_alive_neighbor_count(&self, x: u32, y: u32) -> u8 {
+        let mut alive_neighbor_count = 0;
+        for y_offset in [self.height - 1, 0, 1].iter().cloned() {
+            for x_offset in [self.width - 1, 0, 1].iter().cloned() {
+                if y_offset == 0 && x_offset == 0 {
                     continue;
                 }
 
-                let neighbor_row = (row + row_offset) % self.height;
-                let neighbor_column = (column + column_offset) % self.width;
-                let index = self.get_index(neighbor_row, neighbor_column);
+                let offset_x = (x + x_offset) % self.width;
+                let offset_y = (y + y_offset) % self.height;
+                let cell_index = self.get_cell_index(offset_x, offset_y);
 
-                count += self.cells_buffers[self.current_buffer_index][index] as u8;
+                alive_neighbor_count += self.cells_buffers[self.previous_buffer_index][cell_index] as u8;
             }
         }
 
-        count
-    }
-}
-
-impl Simulation {
-    pub fn get_cells(&self) -> &FixedBitSet {
-        &self.cells_buffers[self.next_buffer_index]
-    }
-
-    pub fn set_cells(&mut self, cells: &[(u32, u32)], enabled: bool) {
-        for (row, column) in cells.iter().cloned() {
-            self.cells_buffers[self.next_buffer_index].set(self.get_index(row, column), enabled);
-        }
+        alive_neighbor_count
     }
 }
